@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreetR - Customer App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* Basic Reset & Body Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            overflow: hidden; /* Prevent body scroll, pages will scroll individually */
+        }
+        .app-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* App Container */
+        .app-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 420px; /* Typical mobile device width */
+            height: 100vh; /* Full height on mobile view */
+            max-height: 800px; /* Limit height for larger screens */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden; /* Hide overflow for page transitions */
+            display: flex;
+            flex-direction: column;
+            position: relative; /* For absolute positioning of pages */
+        }
+
+        /* Page Styling */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Take full height of app-container */
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Enable scrolling for page content */
+            padding-bottom: 60px; /* Space for bottom navigation */
+            transform: translateX(100%); /* Start off-screen to the right */
+            transition: transform 0.3s ease-out; /* Smooth transition */
+            z-index: 1; /* Default z-index */
+        }
+
+        .page.active {
+            transform: translateX(0); /* Bring active page into view */
+            z-index: 2; /* Bring active page to front */
+        }
+        
+        /* Headers */
+        header {
+            background-color: #f8f8f8;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            z-index: 10; /* Ensure header is above content when scrolling */
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h2 {
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .location-display {
+            font-size: 0.9em;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+
+        .location-display i {
+            margin-right: 5px;
+            color: #FFA500; /* Orange accent */
+        }
+
+        .search-btn {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            color: #555;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1; /* Allows main content to expand and fill available space */
+            padding: 20px;
+            overflow-y: auto; /* Enable scrolling for main content if it overflows */
+        }
+
+        main h2 {
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        /* Auth Cards (Login, OTP) */
+        .auth-card, .location-card {
+            background-color: #fff;
+            padding: 30px;
+            margin: auto; /* Center the card vertically and horizontally */
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            width: 90%; /* Adjust width for smaller screens */
+        }
+
+        .auth-card h2, .location-card h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .auth-card p, .location-card p {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .auth-card form, .location-card form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-card input, .location-card input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .auth-card input:focus, .location-card input:focus {
+            border-color: #FFA500; /* Orange border on focus */
+        }
+
+        .primary-btn {
+            background-color: #FFA500; /* Orange primary button */
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            width: 100%;
+        }
+
+        .primary-btn:hover {
+            background-color: #E69500; /* Darker orange on hover */
+        }
+
+        .primary-btn:active {
+            transform: translateY(1px);
+        }
+
+        .text-btn {
+            background: none;
+            border: none;
+            color: #FFA500; /* Orange text button */
+            font-size: 0.9em;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .text-btn:hover {
+            color: #E69500; /* Darker orange on hover */
+        }
+
+        /* reCAPTCHA Container */
+        #recaptcha-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Food List */
+        .food-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsive grid */
+            gap: 20px;
+        }
+
+        .food-item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .food-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .food-item img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .item-details h3 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .item-details .description {
+            font-size: 0.8em;
+            color: #777;
+            margin-bottom: 10px;
+            height: 3em; /* Fixed height for description */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-details .price {
+            font-size: 1em;
+            font-weight: 700;
+            color: #FFA500; /* Orange price color */
+            margin-bottom: 15px;
+        }
+
+        .add-to-cart-btn {
+            background-color: #4CAF50; /* Green for add to cart */
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Cart Page Styling */
+        .empty-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+            font-size: 1.1em;
+            display: none; /* Hidden by default, shown by JS */
+        }
+
+        .empty-message i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        .empty-message button {
+            margin-top: 20px;
+        }
+
+        .cart-list {
+            margin-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .cart-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item-details h3 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .cart-item-details .price {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            background-color: #FFA500; /* Orange quantity button */
+            color: #fff;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background-color: #E69500; /* Darker orange on hover */
+        }
+
+        .item-quantity {
+            font-size: 1em;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .cart-summary {
+            text-align: right;
+            padding: 15px 20px;
+            background-color: #f8f8f8;
+            border-top: 1px solid #eee;
+            font-size: 1.2em;
+            font-weight: 700;
+            position: sticky;
+            bottom: 60px; /* Above the bottom nav */
+            z-index: 5;
+        }
+
+        .place-order-btn-container {
+            padding: 15px 20px;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            position: sticky;
+            bottom: 0; /* Above bottom nav */
+            z-index: 6;
+            display: flex; /* Use flex to center the button */
+            justify-content: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default, shown by JS */
+        }
+
+        .place-order-btn {
+            width: 100%;
+            max-width: 300px; /* Limit button width */
+        }
+
+        /* Orders Page Styling */
+        .order-list {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #FFA500; /* Default accent (Orange) */
+        }
+
+        .order-item.current-order {
+            border-left: 5px solid #4CAF50; /* Highlight current/ongoing orders with green */
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-header h3 {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #fff;
+            text-transform: capitalize;
+        }
+
+        /* Order Status Colors */
+        .order-status.pending { background-color: #FFC107; } /* Amber */
+        .order-status.confirmed { background-color: #2196F3; } /* Blue */
+        .order-status.out-for-delivery { background-color: #4CAF50; } /* Green */
+        .order-status.delivered { background-color: #777; } /* Gray */
+
+        .order-details, .delivery-time {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .order-tracking {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .map-placeholder {
+            background-color: #e0e0e0;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .simulate-notification-btn {
+            background-color: #007bff; /* Blue for simulation button */
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s ease;
+        }
+
+        .simulate-notification-btn:hover {
+            background-color: #0056b3;
+        }
+
+
+        /* Profile Page Styling */
+        #profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        #profile-form label {
+            font-weight: 600;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        #profile-form input[type="text"],
+        #profile-form input[type="tel"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        #profile-form input:focus {
+            border-color: #FFA500; /* Orange border on focus */
+        }
+
+        #profile-form input[disabled] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        #profile-form h3 {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .secondary-btn {
+            background-color: #6c757d; /* Gray for secondary actions */
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .danger-btn {
+            background-color: #dc3545; /* Red for destructive actions like logout */
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .danger-btn:hover {
+            background-color: #c82333;
+        }
+
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            padding: 10px 0;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 20; /* Ensure nav is always on top */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #777;
+            text-decoration: none;
+            font-size: 0.8em;
+            transition: color 0.2s ease;
+            flex: 1; /* Distribute space equally */
+        }
+
+        .nav-item i {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .nav-item.active {
+            color: #FFA500; /* Active navigation item color (Orange) */
+        }
+
+        .nav-item:hover {
+            color: #FFA500; /* Orange on hover */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .app-container {
+                border-radius: 0;
+                max-height: unset;
+            }
+        }
+
+        /* For iOS safe area */
+        @supports (padding-bottom: constant(safe-area-inset-bottom)) {
+            body {
+                padding-bottom: constant(safe-area-inset-bottom);
+            }
+            .page {
+                padding-bottom: calc(60px + constant(safe-area-inset-bottom));
+            }
+            .bottom-nav {
+                padding-bottom: constant(safe-area-inset-bottom);
+                height: calc(60px + constant(safe-area-inset-bottom));
+            }
+            .cart-summary {
+                bottom: calc(60px + constant(safe-area-inset-bottom));
+            }
+            .place-order-btn-container {
+                bottom: constant(safe-area-inset-bottom);
+            }
+        }
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            body {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .page {
+                padding-bottom: calc(60px + env(safe-area-inset-bottom));
+            }
+            .bottom-nav {
+                padding-bottom: env(safe-area-inset-bottom);
+                height: calc(60px + env(safe-area-inset-bottom));
+            }
+            .cart-summary {
+                bottom: calc(60px + env(safe-area-inset-bottom));
+            }
+            .place-order-btn-container {
+                bottom: env(safe-area-inset-bottom);
+            }
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+      // Your web app's Firebase configuration - REPLACE WITH YOURS
+      // Go to Firebase Console -> Project settings -> Your apps -> Web app for this config
+      const firebaseConfig = {
+  apiKey: "AIzaSyCRKLCptOzgY1NWdkZLqi_uOn2EP8i2Ppg",
+  authDomain: "streetr-testing.firebaseapp.com",
+  projectId: "streetr-testing",
+  storageBucket: "streetr-testing.firebasestorage.app",
+  messagingSenderId: "412292939863",
+  appId: "1:412292939863:web:55c985213c10ecc6212312",
+  measurementId: "G-H8VEKR5JTL"
+};
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      // Get the Auth service for later use
+      const auth = firebase.auth();
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_Maps_API_KEY&callback=initMap"></script>
+
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div id="login-page" class="page">
+            <div class="auth-card">
+              <img src="https://assets.onecompiler.app/42q5e2pr5/43jtgmace/1000127427.jpg" alt="StreetR Logo" class="app-logo">
+        
+                <h2>Welcome to StreetR</h2>
+                <p>Log in or Sign up with your phone number</p>
+                <form onsubmit="sendOtp(event)">
+                    <input type="tel" id="login-input" placeholder="+91 9876543210" required>
+                    <button type="submit" class="primary-btn">Send OTP</button>
+                </form>
+                <div id="recaptcha-container"></div> </div>
+                
+        </div>
+
+        <div id="otp-page" class="page">
+            <div class="auth-card">
+                <h2>Verify OTP</h2>
+                <p>Enter the 6-digit code sent to your phone</p>
+                <form onsubmit="verifyOtp(event)">
+                    <input type="number" id="otp-code-input" placeholder="Enter OTP" maxlength="6" required>
+                    <button type="submit" class="primary-btn">Verify & Proceed</button>
+                </form>
+                <button class="text-btn" onclick="resendOtp(event)">Resend OTP</button>
+            </div>
+        </div>
+
+        <div id="location-page" class="page">
+            <div class="location-card">
+                <h2>Where are you located?</h2>
+                <p>Help us find great food near you</p>
+                <form onsubmit="goToHomepage(event)">
+                    <input type="text" id="home-name-input" placeholder="Flat/House No., Building Name" required>
+                    <input type="text" id="street-name-input" placeholder="Street Name, Area, Colony" required>
+                    <input type="text" id="nearby-landmark-input" placeholder="Nearby Landmark (Optional)">
+                    <input type="text" id="district-input" placeholder="District" required>
+                    <input type="text" id="pincode-input" placeholder="Pincode" maxlength="6" pattern="\d{6}" title="6-digit Pincode" required>
+                    <input type="text" id="state-input" placeholder="State" required>
+                    <button type="submit" class="primary-btn">Confirm Location</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="homepage" class="page">
+            <header>
+                <div class="header-content">
+                    <span class="location-display"><i class="fas fa-map-marker-alt"></i> Your Location</span>
+                    <button class="search-btn" onclick="simulateSearchClick(event)"><i class="fas fa-search"></i></button>
+                </div>
+            </header>
+            <main>
+                <h2>Popular Dishes</h2>
+                <div id="food-list" class="food-list">
+                    </div>
+            </main>
+        </div>
+
+        <div id="cart-page" class="page">
+            <header>
+                <div class="header-content">
+                    <h2>Your Cart</h2>
+                    <button class="search-btn" onclick="simulateSearchClick(event)"><i class="fas fa-search"></i></button>
+                </div>
+            </header>
+            <main>
+                <div id="empty-cart-message" class="empty-message">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Your cart is empty!</p>
+                    <button class="primary-btn" onclick="showPage('homepage')">Start Ordering</button>
+                </div>
+                <div id="cart-list" class="cart-list">
+                    </div>
+                <div class="cart-summary">
+                    <p>Total: ₹ <span id="cart-total">0.00</span></p>
+                </div>
+                <div class="place-order-btn-container">
+                    <button class="primary-btn place-order-btn" onclick="placeOrder(event)">Place Order</button>
+                </div>
+            </main>
+        </div>
+
+        <div id="orders-page" class="page">
+            <header>
+                <div class="header-content">
+                    <h2>Your Orders</h2>
+                    <button class="search-btn" onclick="simulateSearchClick(event)"><i class="fas fa-search"></i></button>
+                </div>
+            </header>
+            <main>
+                <div id="no-orders-message" class="empty-message">
+                    <i class="fas fa-box-open"></i>
+                    <p>No orders yet!</p>
+                    <button class="primary-btn" onclick="showPage('homepage')">Start Ordering</button>
+                </div>
+                <div id="order-list" class="order-list">
+                    </div>
+            </main>
+        </div>
+
+        <div id="profile-page" class="page">
+            <header>
+                <div class="header-content">
+                    <h2>Your Profile</h2>
+                    <button class="search-btn" onclick="simulateSearchClick(event)"><i class="fas fa-search"></i></button>
+                </div>
+            </header>
+            <main>
+                <form id="profile-form" onsubmit="saveProfileData(event)">
+                    <label for="customer-name">Name:</label>
+                    <input type="text" id="customer-name" placeholder="Your Name" required>
+
+                    <label for="customer-phone">Phone Number:</label>
+                    <input type="tel" id="customer-phone" disabled> <h3>Your Address</h3>
+                    <input type="text" id="home-name-profile" placeholder="Flat/House No., Building Name" required>
+                    <input type="text" id="street-name-profile" placeholder="Street Name, Area, Colony" required>
+                    <input type="text" id="nearby-landmark-profile" placeholder="Nearby Landmark (Optional)">
+                    <input type="text" id="district-profile" placeholder="District" required>
+                    <input type="text" id="pincode-profile" placeholder="Pincode" maxlength="6" pattern="\d{6}" title="6-digit Pincode" required>
+                    <input type="text" id="state-profile" placeholder="State" required>
+
+                    <button type="submit" class="primary-btn">Save Profile</button>
+                </form>
+                <div class="profile-actions">
+                    <button class="secondary-btn" onclick="openHelpLink(event)">Help & Support</button>
+                    <button class="danger-btn" onclick="logout(event)">Logout</button>
+                </div>
+            </main>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-target="homepage">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" data-target="cart-page">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Cart</span>
+            </a>
+            <a href="#" class="nav-item" data-target="orders-page">
+                <i class="fas fa-box"></i>
+                <span>Orders</span>
+            </a>
+            <a href="#" class="nav-item" data-target="profile-page">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+                
+
+    </div>
+
+    <script>
+            // Google Maps API Integration (Conceptual/Placeholder)
+        // This function is defined globally to be called by the Google Maps API script
+        // It's placed outside `DOMContentLoaded` to ensure global availability as soon as the script loads.
+        window.initMap = function() {
+            console.log("Google Maps API loaded successfully.");
+        };
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Select all page elements and navigation items
+            const pages = document.querySelectorAll('.page');
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            const bottomNav = document.querySelector('.bottom-nav'); // FIXED: Get the bottom nav element
+
+            // Get specific content containers
+            const foodListContainer = document.getElementById('food-list');
+            const cartListContainer = document.getElementById('cart-list');
+            const cartTotalSpan = document.getElementById('cart-total');
+            const orderListContainer = document.getElementById('order-list');
+            const emptyCartMessage = document.getElementById('empty-cart-message');
+            const noOrdersMessage = document.getElementById('no-orders-message');
+
+            // Firebase related variables (auth is globally available from index.html script)
+            let recaptchaVerifier;
+            let confirmationResult;
+            let currentUserPhoneNumber = ''; // To store the authenticated phone number
+
+            // --- App Data (simulated) ---
+            // This array holds the available food items
+            const foodItems = [
+                { id: 'p1', name: 'Margherita Pizza', description: 'Classic cheesy delight with fresh basil.', price: 299, image: 'https://via.placeholder.com/100x100/FFD700/FFFFFF?text=Pizza' },
+                { id: 'b1', name: 'Spicy Chicken Burger', description: 'Juicy chicken patty with spicy sauce.', price: 180, image: 'https://via.placeholder.com/100x100/A0522D/FFFFFF?text=Burger' },
+                { id: 'i1', name: 'Chicken Biryani', description: 'Aromatic basmati rice with tender chicken.', price: 250, image: 'https://via.placeholder.com/100x100/8B0000/FFFFFF?text=Biryani' },
+                { id: 'd1', name: 'Vanilla Ice Cream', description: 'Creamy vanilla goodness.', price: 90, image: 'https://via.placeholder.com/100x100/ADD8E6/000000?text=Ice+Cream' },
+                { id: 's1', name: 'Caesar Salad', description: 'Fresh greens with grilled chicken.', price: 220, image: 'https://via.placeholder.com/100x100/90EE90/000000?text=Salad' },
+                { id: 'c1', name: 'Cold Coffee', description: 'Refreshing iced coffee.', price: 120, image: 'https://via.placeholder.com/100x100/D2B48C/000000?text=Coffee' },
+            ];
+
+            // Initialize an empty cart for the current session
+            let cart = [];
+            // Load saved orders from localStorage, or initialize as an empty array if none exist
+            let userOrders = JSON.parse(localStorage.getItem('streetr_user_orders')) || [];
+
+            // --- Page Navigation Functions ---
+            // Function to show a specific page and update the active navigation item
+            function showPage(id) {
+                pages.forEach(page => {
+                    page.classList.remove('active'); // Hide all pages
+                });
+                document.getElementById(id).classList.add('active'); // Show the target page
+
+                // FIXED: Control Footer Visibility based on the active page
+                const pagesWithFooter = ['homepage', 'cart-page', 'orders-page', 'profile-page'];
+                if (pagesWithFooter.includes(id)) {
+                    bottomNav.style.display = 'flex'; // Show the footer for main app pages
+                    navItems.forEach(item => {
+                        if (item.dataset.target === id) {
+                            item.classList.add('active'); // Set active class for the corresponding nav item
+                        } else {
+                            item.classList.remove('active'); // Remove active class from others
+                        }
+                    });
+                } else {
+                    bottomNav.style.display = 'none'; // Hide the footer for login, otp, location pages
+                }
+
+                // Scroll to the top of the newly active page
+                const activePage = document.getElementById(id);
+                if (activePage) {
+                    activePage.scrollTop = 0;
+                }
+
+                // Perform specific actions when certain pages become active
+                if (id === 'profile-page') {
+                    loadProfileData(); // Load profile data when profile page is shown
+                } else if (id === 'cart-page') {
+                    renderCart(); // Render cart items when cart page is shown
+                } else if (id === 'orders-page') {
+                    renderOrders(); // Render orders when orders page is shown
+                }
+                console.log("Determined page to show:", id); // Log the page that is being shown
+            }
+
+            // --- Browser Notification Permission Request ---
+            function requestNotificationPermission() {
+                // Check if the browser supports the Notification API
+                if (!('Notification' in window)) {
+                    console.warn("Notifications are not supported in this browser.");
+                    return;
+                }
+
+                // Check if we've already asked for notifications in this session/device
+                const hasAsked = localStorage.getItem('streetr_asked_notifications');
+                if (hasAsked === 'true') {
+                    console.log("Already asked for notification permission (flag set).");
+                    return; // Don't ask again if flag is true
+                }
+
+                // Check the current permission status
+                if (Notification.permission === 'granted') {
+                    console.log("Notification permission already granted.");
+                    localStorage.setItem('streetr_asked_notifications', 'true'); // Set flag if already granted
+                } else if (Notification.permission === 'denied') {
+                    console.warn("Notification permission previously denied by user.");
+                    localStorage.setItem('streetr_asked_notifications', 'true'); // Set flag if already denied
+                } else { // 'default' - permission has not been requested yet
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            console.log("Notification permission granted!");
+                            // At this point, you could integrate with Firebase Cloud Messaging (FCM)
+                            // to get a device token and send it to your backend for push notifications.
+                        } else {
+                            console.warn("Notification permission denied by user.");
+                        }
+                        // Set the flag in localStorage regardless of the outcome, so we don't ask again next time
+                        localStorage.setItem('streetr_asked_notifications', 'true');
+                    }).catch(error => {
+                        console.error("Error requesting notification permission:", error);
+                        localStorage.setItem('streetr_asked_notifications', 'true'); // Also set flag on error
+                    });
+                }
+            }
+
+
+            // --- Firebase Authentication Logic ---
+            // Listener for Firebase authentication state changes
+            console.log("Setting up onAuthStateChanged listener."); // Log when the listener is set up
+            auth.onAuthStateChanged((user) => {
+                console.log("onAuthStateChanged fired. User:", user); // Log the user object received
+                let pageToShow = ''; // Determine which page to show
+                if (user) {
+                    // User is signed in.
+                    currentUserPhoneNumber = user.phoneNumber;
+                    console.log('User signed in:', user.phoneNumber);
+
+                    // Update the phone number field on the profile page
+                    document.getElementById('customer-phone').value = user.phoneNumber;
+
+                    // Check if user has already set their location details in localStorage
+                    const storedLocation = localStorage.getItem('streetr_user_location_details');
+                    let userLocationSet = false;
+                    try {
+                        const parsedLocation = storedLocation ? JSON.parse(storedLocation) : null;
+                        // A simple check to see if critical fields are present
+                        if (parsedLocation && parsedLocation.homeName && parsedLocation.streetName && parsedLocation.district && parsedLocation.pincode && parsedLocation.state) {
+                            userLocationSet = true;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stored location, clearing invalid data:", e);
+                        localStorage.removeItem('streetr_user_location_details'); // Clear potentially bad data
+                    }
+
+                    if (userLocationSet) {
+                        pageToShow = 'homepage'; // Go to homepage if logged in and location set
+                    } else {
+                        pageToShow = 'location-page'; // Otherwise, prompt for location
+                    }
+                } else {
+                    // No user is signed in. Show the login page.
+                    pageToShow = 'login-page';
+                    // Initialize reCAPTCHA for phone number authentication if not already done
+                    if (!recaptchaVerifier) {
+                        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                            'size': 'invisible', // Use 'normal' if you want a visible reCAPTCHA box
+                            'callback': (response) => { console.log("reCAPTCHA solved"); },
+                            'expired-callback': () => {
+                                console.error("reCAPTCHA expired. Please try again.");
+                                alert("reCAPTCHA expired. Please try sending OTP again.");
+                            }
+                        });
+                        recaptchaVerifier.render().then((widgetId) => {
+                            console.log("reCAPTCHA rendered with ID:", widgetId);
+                        }).catch(error => {
+                            console.error("Error rendering reCAPTCHA:", error);
+                        });
+                    }
+                }
+                
+                // Show the determined page directly
+                showPage(pageToShow);
+            });
+
+            // Function to send OTP via Firebase
+            window.sendOtp = function(event) {
+                event.preventDefault(); // Prevent form submission
+                const phoneNumber = document.getElementById('login-input').value;
+
+                if (!phoneNumber) {
+                    alert('Please enter your Phone Number.');
+                    return;
+                }
+
+                // Basic validation for Indian phone numbers starting with +91
+                const indianPhoneNumberRegex = /^\+91[6789]\d{9}$/;
+                if (!indianPhoneNumberRegex.test(phoneNumber)) {
+                    alert('Please enter a valid Indian phone number starting with +91 (e.g., +919876543210).');
+                    return;
+                }
+
+                // Send the OTP using Firebase
+                auth.signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
+                    .then((result) => {
+                        confirmationResult = result; // Store the confirmation result for later OTP verification
+                        alert('OTP sent successfully!');
+                        showPage('otp-page'); // Navigate to the OTP verification page
+                    })
+                    .catch((error) => {
+                        console.error("Error sending OTP:", error);
+                        alert("Error sending OTP: " + error.message);
+                        // Reset reCAPTCHA if there's an error to allow a fresh attempt
+                        if (recaptchaVerifier && typeof recaptchaVerifier.reset === 'function') {
+                            recaptchaVerifier.reset();
+                        }
+                    });
+            }
+
+            // Function to verify the entered OTP
+            window.verifyOtp = function(event) {
+                if (event) event.preventDefault(); // Prevent form submission if applicable
+                const otpCode = document.getElementById('otp-code-input').value;
+
+                if (!otpCode || otpCode.length !== 6) {
+                    alert('Please enter a valid 6-digit OTP.');
+                    return;
+                }
+
+                if (confirmationResult) {
+                    confirmationResult.confirm(otpCode)
+                        .then((userCredential) => {
+                            // User successfully signed in.
+                            const user = userCredential.user;
+                            console.log('User signed in:', user.phoneNumber);
+                            alert('OTP verified successfully! Welcome.');
+                            currentUserPhoneNumber = user.phoneNumber; // Update the current user's phone number
+                            document.getElementById('customer-phone').value = user.phoneNumber; // Set phone in profile
+                            
+                            // *** IMPORTANT: Request notification permission after first-time login ***
+                            // This ensures the user is logged in before asking for a permission that might be useful
+                            // after they start using the app.
+                            if (localStorage.getItem('streetr_asked_notifications') !== 'true') {
+                                requestNotificationPermission();
+                            }
+                            
+                            // Check if location is already set; if not, prompt for it
+                            const storedLocation = localStorage.getItem('streetr_user_location_details');
+                            let userLocationSet = false;
+                            try {
+                                const parsedLocation = storedLocation ? JSON.parse(storedLocation) : null;
+                                if (parsedLocation && parsedLocation.homeName && parsedLocation.streetName && parsedLocation.district && parsedLocation.pincode && parsedLocation.state) {
+                                    userLocationSet = true;
+                                }
+                            } catch (e) {
+                                console.error("Error parsing stored location after login, clearing invalid data:", e);
+                                localStorage.removeItem('streetr_user_location_details');
+                            }
+
+                            if (userLocationSet) {
+                                showPage('homepage');
+                            } else {
+                                showPage('location-page');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error verifying OTP:", error);
+                            alert("Error verifying OTP: " + error.message);
+                        });
+                } else {
+                    alert('Please send OTP first by logging in.');
+                }
+            }
+
+            // Function to resend the OTP
+            window.resendOtp = function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                const phoneNumber = document.getElementById('login-input').value;
+
+                if (!phoneNumber) {
+                    alert('No phone number to resend OTP to. Please go back and enter your number.');
+                    return;
+                }
+
+                alert('Resending OTP...');
+                // Reset reCAPTCHA to ensure a fresh challenge for resend
+                if (recaptchaVerifier && typeof recaptchaVerifier.reset === 'function') {
+                    recaptchaVerifier.reset();
+                } else {
+                    // Re-create recaptcha if it was somehow not initialized (less likely)
+                    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        'size': 'invisible'
+                    });
+                    recaptchaVerifier.render();
+                }
+
+                // Attempt to resend OTP
+                auth.signInWithPhoneNumber(phoneNumber, recaptchaVerifier)
+                    .then((result) => {
+                        confirmationResult = result;
+                        alert('OTP resent successfully!');
+                    })
+                    .catch((error) => {
+                        console.error("Error resending OTP:", error);
+                        alert("Error resending OTP: " + error.message);
+                    });
+            }
+
+            // --- Location Input Logic ---
+            // Function to save location details and navigate to homepage
+            window.goToHomepage = function(event) {
+                event.preventDefault(); // Prevent form submission
+                const homeName = document.getElementById('home-name-input').value;
+                const streetName = document.getElementById('street-name-input').value;
+                const nearbyLandmark = document.getElementById('nearby-landmark-input').value;
+                const district = document.getElementById('district-input').value;
+                const pincode = document.getElementById('pincode-input').value;
+                const state = document.getElementById('state-input').value;
+
+                // Simple validation for required fields
+                if (!homeName || !streetName || !district || !pincode || !state) {
+                    alert('Please fill in all required address fields (Home Name, Street Name, District, Pincode, State).');
+                    return;
+                }
+                if (!/^\d{6}$/.test(pincode)) {
+                    alert('Please enter a valid 6-digit Pincode.');
+                    return;
+                }
+
+                // Store location details in localStorage
+                const locationDetails = {
+                    homeName,
+                    streetName,
+                    nearbyLandmark,
+                    district,
+                    pincode,
+                    state
+                };
+                localStorage.setItem('streetr_user_location_details', JSON.stringify(locationDetails));
+                console.log('Confirmed location:', locationDetails);
+                showPage('homepage'); // Go to the homepage
+            }
+
+            // --- LocalStorage - Save & Load Profile Data ---
+            // Function to save user profile data, including updated address
+            window.saveProfileData = function(event) {
+                event.preventDefault(); // Prevent form submission
+                const name = document.getElementById('customer-name').value;
+                const phone = document.getElementById('customer-phone').value; // Phone number is read from disabled field
+
+                // Get all location details from profile page fields
+                const homeName = document.getElementById('home-name-profile').value;
+                const streetName = document.getElementById('street-name-profile').value;
+                const nearbyLandmark = document.getElementById('nearby-landmark-profile').value;
+                const district = document.getElementById('district-profile').value;
+                const pincode = document.getElementById('pincode-profile').value;
+                const state = document.getElementById('state-profile').value;
+
+                // Basic validation for address fields
+                if (!homeName || !streetName || !district || !pincode || !state) {
+                    alert('Please fill in all required address fields (Home Name, Street Name, District, Pincode, State).');
+                    return;
+                }
+                if (!/^\d{6}$/.test(pincode)) {
+                    alert('Please enter a valid 6-digit Pincode.');
+                    return;
+                }
+
+                // Construct the profile data object
+                const profileData = {
+                    name: name,
+                    phone: phone,
+                    address: { // Store detailed address info
+                        homeName,
+                        streetName,
+                        nearbyLandmark,
+                        district,
+                        pincode,
+                        state
+                    }
+                };
+
+                // Save profile and location data to localStorage
+                localStorage.setItem('streetr_user_profile', JSON.stringify(profileData));
+                localStorage.setItem('streetr_user_location_details', JSON.stringify(profileData.address)); // Ensure location is updated too
+                alert('Profile data saved locally!');
+            }
+
+            // Function to load and display profile data
+            function loadProfileData() {
+                const profileData = JSON.parse(localStorage.getItem('streetr_user_profile'));
+                if (profileData) {
+                    document.getElementById('customer-name').value = profileData.name || '';
+                    
+                    // Populate address fields in the profile page
+                    if (profileData.address) {
+                        document.getElementById('home-name-profile').value = profileData.address.homeName || '';
+                        document.getElementById('street-name-profile').value = profileData.address.streetName || '';
+                        document.getElementById('nearby-landmark-profile').value = profileData.address.nearbyLandmark || '';
+                        document.getElementById('district-profile').value = profileData.address.district || '';
+                        document.getElementById('pincode-profile').value = profileData.address.pincode || '';
+                        document.getElementById('state-profile').value = profileData.address.state || '';
+                    }
+                }
+                // Always ensure the phone number is up-to-date from the current Firebase session
+                if (currentUserPhoneNumber) {
+                     document.getElementById('customer-phone').value = currentUserPhoneNumber;
+                }
+            }
+
+            // --- Homepage - Food List Rendering ---
+            // Function to render all food items on the homepage
+            function renderFoodItems() {
+                foodListContainer.innerHTML = ''; // Clear existing items
+                foodItems.forEach(item => {
+                    const foodItemDiv = document.createElement('div');
+                    foodItemDiv.className = 'food-item';
+                    foodItemDiv.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="item-details">
+                            <h3>${item.name}</h3>
+                            <p class="description">${item.description}</p>
+                            <p class="price">₹ ${item.price.toFixed(2)}</p>
+                        </div>
+                        <button class="add-to-cart-btn" data-item-id="${item.id}">Add to Cart</button>
+                    `;
+                    foodListContainer.appendChild(foodItemDiv);
+                });
+
+                // Attach event listeners to all "Add to Cart" buttons
+                document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const itemId = event.target.dataset.itemId;
+                        addToCart(itemId);
+                    });
+                });
+            }
+
+            // --- Cart Management ---
+            // Function to add an item to the cart
+            function addToCart(itemId) {
+                const itemToAdd = foodItems.find(item => item.id === itemId);
+                if (itemToAdd) {
+                    const existingCartItem = cart.find(cartItem => cartItem.id === itemId);
+                    if (existingCartItem) {
+                        existingCartItem.quantity++; // Increment quantity if item already in cart
+                    } else {
+                        // Add new item to cart with quantity 1
+                        cart.push({ ...itemToAdd, quantity: 1 });
+                    }
+                    alert(`${itemToAdd.name} added to cart!`);
+                    renderCart(); // Re-render cart to reflect changes (if on cart page)
+                }
+            }
+
+            // Function to update the quantity of an item in the cart
+            window.updateCartItemQuantity = function(itemId, change) {
+                const cartItem = cart.find(item => item.id === itemId);
+                if (cartItem) {
+                    cartItem.quantity += change;
+                    if (cartItem.quantity <= 0) {
+                        // Remove item from cart if quantity drops to zero or less
+                        cart = cart.filter(item => item.id !== itemId);
+                    }
+                    renderCart(); // Re-render the cart after quantity change
+                }
+            }
+
+            // Function to calculate the total price of items in the cart
+            function calculateCartTotal() {
+                return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            }
+
+            // Function to render items in the cart page
+            function renderCart() {
+                cartListContainer.innerHTML = ''; // Clear existing cart items
+                if (cart.length === 0) {
+                    emptyCartMessage.style.display = 'block'; // Show empty cart message
+                    document.querySelector('.place-order-btn-container').style.display = 'none'; // Hide place order button
+                } else {
+                    emptyCartMessage.style.display = 'none'; // Hide empty cart message
+                    document.querySelector('.place-order-btn-container').style.display = 'flex'; // Show place order button
+                    cart.forEach(item => {
+                        const cartItemDiv = document.createElement('div');
+                        cartItemDiv.className = 'cart-item';
+                        cartItemDiv.innerHTML = `
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="cart-item-details">
+                                <h3>${item.name}</h3>
+                                <p class="price">₹ ${item.price.toFixed(2)}</p>
+                            </div>
+                            <div class="cart-item-actions">
+                                <button class="quantity-btn" onclick="updateCartItemQuantity('${item.id}', -1)">-</button>
+                                <span class="item-quantity">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateCartItemQuantity('${item.id}', 1)">+</button>
+                            </div>
+                        `;
+                        cartListContainer.appendChild(cartItemDiv);
+                    });
+                }
+                cartTotalSpan.textContent = calculateCartTotal().toFixed(2); // Update the total price
+            }
+
+            // --- Order Placing Logic (Frontend Simulated) ---
+            // Function to simulate placing an order
+            window.placeOrder = function(event) {
+                event.preventDefault(); // Prevent form submission
+                if (cart.length === 0) {
+                    alert('Your cart is empty. Add items before placing an order.');
+                    return;
+                }
+
+                // Generate simulated order details
+                const orderId = 'ORD' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100); // Unique ID
+                const orderTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); // Format for India
+                const totalAmount = calculateCartTotal();
+                const orderItems = cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+                const newOrder = {
+                    id: orderId,
+                    time: orderTime,
+                    items: orderItems,
+                    total: totalAmount,
+                    status: 'pending' // Initial order status
+                };
+
+                userOrders.unshift(newOrder); // Add the new order to the beginning of the orders array
+                localStorage.setItem('streetr_user_orders', JSON.stringify(userOrders));
+                
+                // --- UPI Payment Integration (Simulated) ---
+                // These details would typically come from a secure backend in a real app
+                const upiId = "Ramutheking1023@ybl"; // Example UPI ID
+                const payeeName = "StreetR Merchant"; 
+                const amount = totalAmount.toFixed(2);
+                const transactionRef = orderId; 
+
+                // Construct the UPI deep link
+                const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tr=${encodeURIComponent(transactionRef)}`;
+                
+                // Attempt to open the UPI app
+                window.location.href = upiLink;
+
+                // Clear cart and navigate to orders page after initiating payment
+                // In a real app, this would be triggered by a payment confirmation callback.
+                cart = []; // Clear current cart
+                alert('Initiating UPI payment... please complete payment in your UPI app. Check your Orders page for status.');
+                showPage('orders-page'); // Navigate to orders page
+                renderOrders(); // Re-render orders to show the new order
+                renderCart(); // Re-render cart (to show it's empty)
+
+                // --- Push Notification to Seller (Conceptual Backend Interaction) ---
+                console.log(`Simulating push notification to seller: New Order ${orderId}`);
+                // In a real application, a Firebase Cloud Function would be triggered here
+                // (e.g., via Firestore trigger on 'orders' collection) to send an FCM message to the seller app.
+            }
+
+            // --- Orders Page - Rendering Orders ---
+            // Function to render all past and current orders
+            function renderOrders() {
+                orderListContainer.innerHTML = ''; // Clear existing orders
+                if (userOrders.length === 0) {
+                    noOrdersMessage.style.display = 'block'; // Show "no orders" message
+                } else {
+                    noOrdersMessage.style.display = 'none'; // Hide "no orders" message
+                    userOrders.forEach(order => {
+                        const orderItemDiv = document.createElement('div');
+                        // Add 'current-order' class for ongoing orders to highlight them
+                        orderItemDiv.className = `order-item ${['pending', 'confirmed', 'out-for-delivery'].includes(order.status) ? 'current-order' : ''}`;
+                        let itemsSummary = order.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+
+                        orderItemDiv.innerHTML = `
+                            <div class="order-header">
+                                <h3>Order #${order.id}</h3>
+                                <span class="order-status ${order.status.replace(/\s/g, '-')}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                            </div>
+                            <p class="order-details">Items: ${itemsSummary}</p>
+                            <p class="order-details">Total: ₹ ${order.total.toFixed(2)}</p>
+                            <p class="delivery-time">Placed: ${order.time}</p>
+                            <div class="order-tracking">
+                                <div class="map-placeholder" id="map_${order.id}">
+                                    <p>Live tracking map placeholder</p>
+                                </div>
+                                <p class="delivery-time">Estimated Delivery: N/A</p>
+                                <button class="simulate-notification-btn" onclick="simulateDeliveryUpdate('${order.id}', '${order.status}')">Simulate Delivery Update</button>
+                            </div>
+                        `;
+                        orderListContainer.appendChild(orderItemDiv);
+                    });
+                }
+            }
+
+            // --- Push Notifications + Live Delivery Tracking (Simulated Frontend Logic) ---
+            // Function to simulate delivery status updates and notifications
+            window.simulateDeliveryUpdate = function(orderId, currentStatus) {
+                let newStatus;
+                switch(currentStatus) {
+                    case 'pending':
+                        newStatus = 'confirmed';
+                        alert(`Notification for Order #${orderId}: Your order has been confirmed!`);
+                        // This is where a real web push notification would be shown
+                        if (Notification.permission === 'granted') {
+                            new Notification(`Order #${orderId} Confirmed!`, {
+                                body: 'Your order has been accepted and is being prepared.',
+                                icon: 'https://via.placeholder.com/50x50?text=Order'
+                            });
+                        }
+                        break;
+                    case 'confirmed':
+                        newStatus = 'out-for-delivery';
+                        alert(`Notification for Order #${orderId}: Your order is out for delivery!`);
+                        if (Notification.permission === 'granted') {
+                            new Notification(`Order #${orderId} Out for Delivery!`, {
+                                body: 'Your food is on its way to your street!',
+                                icon: 'https://via.placeholder.com/50x50?text=Delivery'
+                            });
+                        }
+                        break;
+                    case 'out-for-delivery':
+                        newStatus = 'delivered';
+                        alert(`Notification for Order #${orderId}: Your order has been delivered! Enjoy!`);
+                        if (Notification.permission === 'granted') {
+                            new Notification(`Order #${orderId} Delivered!`, {
+                                body: 'Enjoy your delicious meal!',
+                                icon: 'https://via.placeholder.com/50x50?text=Delivered'
+                            });
+                        }
+                        break;
+                    case 'delivered':
+                        newStatus = 'delivered'; // Stays delivered
+                        alert(`Notification for Order #${orderId}: Order already delivered.`);
+                        break;
+                    default:
+                        newStatus = 'pending'; // Fallback status
+                        alert(`Notification for Order #${orderId}: Status updated to pending.`);
+                }
+
+                // Update status in local storage for the specific order
+                const orderToUpdate = userOrders.find(order => order.id === orderId);
+                if (orderToUpdate) {
+                    orderToUpdate.status = newStatus;
+                    localStorage.setItem('streetr_user_orders', JSON.stringify(userOrders));
+                    renderOrders(); // Re-render orders to show updated status and colors
+                }
+            }
+
+            // --- Profile Page Buttons ---
+            // Function to log out the user
+            window.logout = function(event) {
+                event.preventDefault();
+                auth.signOut().then(() => {
+                    console.log("User signed out successfully.");
+                    alert("You have been logged out.");
+                    // Clear relevant localStorage data on logout for a fresh start
+                    // Note: 'streetr_asked_notifications' is intentionally NOT cleared to avoid re-prompting
+                    // the same user if they log back in on the same device.
+                    localStorage.removeItem('streetr_user_profile');
+                    localStorage.removeItem('streetr_user_location_details');
+                    localStorage.removeItem('streetr_user_orders'); // Clear orders on logout for demo
+                    cart = []; // Clear current session cart
+                    // auth.onAuthStateChanged will handle redirection to login-page
+                }).catch((error) => {
+                    console.error("Error logging out:", error);
+                    alert("Error logging out: " + error.message);
+                });
+            }
+
+            // Function to open a help link
+            window.openHelpLink = function(event) {
+                event.preventDefault();
+                // REPLACE WITH YOUR ACTUAL HELP PAGE URL
+                window.open('https://your-help-link.com', '_blank'); 
+            }
+
+            // Simulated search click for headers on other pages
+            window.simulateSearchClick = function(event) {
+                event.preventDefault();
+                alert('Search function triggered! (Placeholder)');
+                console.log('Search button clicked on non-homepage header.');
+            }
+
+
+            // --- Initial Load & Event Listeners ---
+            renderFoodItems(); // Populate the food list when the DOM is ready
+
+            // Add event listeners for bottom navigation clicks
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent default link behavior
+                    const targetPageId = item.dataset.target;
+                    showPage(targetPageId); // Show the target page
+                });
+            });
+
+            // The initial page displayed (login-page or homepage/location-page)
+            // is automatically handled by the Firebase `auth.onAuthStateChanged` listener.
+            // Notification permission request is now handled within verifyOtp after first login.
+        });
+
+    </script>
+</body>
+</html>
